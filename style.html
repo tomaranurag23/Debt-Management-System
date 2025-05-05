@@ -1,0 +1,133 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Debt Management System{% endblock %}</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            200: '#ddd6fe',
+                            300: '#c4b5fd',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Custom CSS -->
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6d28d9;
+        }
+        
+        /* Chart container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: auto;
+        }
+        
+        /* Flash message animation */
+        .flash-message {
+            animation: fadeOut 5s forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        /* Table styling */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table th, .table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #4b5563;
+        }
+        .table th {
+            text-align: left;
+            font-weight: 600;
+            background-color: #374151;
+        }
+        .table-hover tr:hover {
+            background-color: #374151;
+        }
+        
+        /* Progress bars */
+        .progress {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #374151;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+        }
+    </style>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-gray-900 text-gray-300 min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="{{ url_for('index') }}" class="flex items-center">
+                            <i class="fas fa-money-bill-wave text-primary-500 text-2xl mr-2"></i>
+                            <span class="font-bold text-white">DebtTracker</span>
+                        </a>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="ml-10 flex items-baseline space-x-4">
+                            <a href="{{ url_for('index') }}" class="px-3 py-2 rounded-md text-sm font-medium {% if request.path == url_for('index') %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %}">Dashboard</a>
+                            <a href="{{ url_for('view_all_debts') }}" class="px-3 py-2 rounded-md text-sm font-medium {% if request.path == url_for('view_all_debts') %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %}">Debts</a>
+                            <a href="{{ url_for('strategy_comparison') }}" class="px-3 py-2 rounded-md text-sm font-medium {% if request.path == url_for('strategy_comparison') %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %}">Strategy Comparison</a>
+                            <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium {% if request.path == url_for('dashboard') %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %}">Analytics</a>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <a href="{{ url_for('add_debt') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <i class="fas fa-plus mr-2"></i> Add Debt
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div class="md:hidden border-t border-gray-700">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">

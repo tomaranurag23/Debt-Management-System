@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Your Debts</h1>
+        <a href="/debt/add" class="btn">Add Debt</a>
+    </div>
+    
+    {% if debts %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Balance</th>
+                    <th>Interest Rate</th>
+                    <th>Min Payment</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for debt in debts %}
+                <tr>
+                    <td>{{ debt['name'] }}</td>
+                    <td>${{ debt['balance'] }}</td>
+                    <td>{{ debt['interest_rate'] }}%</td>
+                    <td>${{ debt['min_payment'] }}</td>
+                    <td>
+                        <a href="/debt/{{ debt['id'] }}" class="btn">View</a>
+                        <a href="/debt/{{ debt['id'] }}/edit" class="btn">Edit</a>
+                        <a href="/debt/{{ debt['id'] }}/payment" class="btn btn-success">Pay</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="card">
+            <h2>No debts found</h2>
+            <p>Start by adding your first debt.</p>
+            <a href="/debt/add" class="btn">Add Debt</a>
+        </div>
+    {% endif %}
+{% endblock %}

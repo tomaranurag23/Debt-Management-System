@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debt Management System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --warning: #ea580c;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --bg: #f8fafc;
+            --bg-card: #ffffff;
+            --border: #e2e8f0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 20px;
+        }
+        
+        nav ul li a {
+            text-decoration: none;
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        nav ul li a:hover {
+            background-color: var(--border);
+        }
+        
+        .active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-card {
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .dashboard-card h3 {
+            margin-bottom: 15px;
+            color: var(--text);
+            font-size: 18px;
+        }
+        
+        .amount {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .amount.debt {
+            color: var(--danger);
+        }
+        
+        .amount.payment {
+            color: var(--success);
+        }
+        
+        .card-detail {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        
+        .section {
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #15803d;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.01);
+        }
+        
+        .action-column {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-danger {
+            background-color: #fee2e2;
+            color: var(--danger);
+        }
+        
+        .badge-success {
+            background-color: #dcfce7;
+            color: var(--success);
+        }
+        
+        .badge-warning {
+            background-color: #ffedd5;
+            color: var(--warning);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+        }
+        
+        .modal-content {
+            background-color: var(--bg-card);
+            margin: 10% auto;
+            padding: 25px;
+            border-radius: 10px;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .close {
+            color: var(--text-light);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: var(--text);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-light);
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn-secondary {
+            background-color: var(--border);
+            color: var(--text);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
+        
+        .chart-container {
+            margin-top: 20px;
+            height: 400px;
+        }
+        
+        /* Tabs styling */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-right: 10px;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Strategy comparison */
+        .strategy-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .strategy-card {
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .strategy-card h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .strategy-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .strategy-highlight {
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--success);
+        }
+        
+        .recommendation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f9ff;
+            border-radius: 5px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .strategy-comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            nav ul {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Frontend Page</title>
+</head>
+<body>
+
+  <script src="frontend.js"></script>
+
+</body>
+</html>
+
+    <div class="container">
+        <header>
+            <div class="logo">DebtTracker</div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active" onclick="showPage('dashboard')">Dashboard</a></li>
+                    <li><a href="#" onclick="showPage('debts')">Debts</a></li>
+                    <li><a href="#" onclick="showPage('strategies')">Strategies</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page">
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>Total Debt</h3>
+                    <div class="amount debt" id="total-debt">$0.00</div>
+                    <div class="card-detail">Across <span id="debt-count">0</span> accounts</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h3>Monthly Interest</h3>
+                    <div class="amount debt" id="monthly-interest">$0.00</div>
+                    <div class="card-detail">Interest per month</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <h3>Monthly Payment</h3>
+                    <div class="amount payment" id="monthly-payment">$0.00</div>
+                    <div class="card-detail">Minimum required</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header">
+                    <h2>Your Debts</h2>
+                    <button class="btn btn-primary" onclick="openModal('add-debt-modal')">Add New Debt</button>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Balance</th>
+                            <th>Interest Rate</th>
+                            <th>Min Payment</th>
+                            <th>Payoff Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="debts-table-body">
+                        <!-- Debt rows will be added here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="section">
+                <div class="section-header">
+                    <h2>Recent Payments</h2>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Debt</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payments-table-body">
+                        <!-- Payment rows will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Debts Page -->
+        <div id="debts" class="page" style="display:none;">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Debt Details</h2>
+                </div>
+                
+                <div id="debt-details-container">
+                    <p>Select a debt to view details</p>
+                    <div id="debt-selector"></div>
+                </div>
+                
+                <div id="debt-detail-content" style="display:none;">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="overview">Overview</div>
+                        <div class="tab" data-tab="payment-history">Payment History</div>
+                        <div class="tab" data-tab="payment-plan">Payment Plan</div>
+                    </div>
+                    
+                    <div id="overview" class="tab-content active">
+                        <div id="debt-overview"></div>
+                        <div class="chart-container">
+                            <canvas id="payment-distribution-chart"></canvas>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-success" onclick="openModal('make-payment-modal')">Make Payment</button>
+                        </div>
+                    </div>
+                    
+                    <div id="payment-history" class="tab-content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payment-history-table">
+                                <!-- Payment history rows will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="payment-plan" class="tab-content">
+                        <div style="margin-bottom: 20px;">
+                            <select id="payment-plan-strategy" class="form-control" style="max-width: 300px;">
+                                <option value="minimum">Minimum Payments Only</option>
+                                <option value="accelerated">Accelerated Payments</option>
+                            </select>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <canvas id="payment-plan-chart"></canvas>
+                        </div>
+                        
+                        <div id="payment-plan-summary" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Strategies Page -->
+        <div id="strategies" class="page" style="display:none;">
+            <div class="section">
+                <div class="section-header">
+                    <h2>Debt Payoff Strategies</h2>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label for="extra-payment">Monthly Extra Payment</label>
+                        <input type="number" id="extra-payment" class="form-control" value="0" min="0" style="max-width: 300px;">
+                    </div>
+                    <button class="btn btn-primary" onclick="compareStrategies()">Compare Strategies</button>
+                </div>
+                
+                <div id="strategy-comparison-results" style="display:none;">
+                    <div class="strategy-comparison">
+                        <div class="strategy-card">
+                            <h3>Avalanche Method</h3>
+                            <p>Pay highest interest rate debts first</p>
+                            
+                            <div class="strategy-detail">
+                                <span>Payoff Timeline:</span>
+                                <span id="avalanche-time"></span>
+                            </div>
+                            
+                            <div class="strategy-detail">
+                                <span>Payoff Date:</span>
+                                <span id="avalanche-date"></span>
+                            </div>
+                            
+                            <div class="strategy-detail">
+                                <span>Total Interest:</span>
+                                <span id="avalanche-interest" class="strategy-highlight"></span>
+                            </div>
+                            
+                            <div class="strategy-detail">
+                                <span>Total Paid:</span>
+                                <span id="avalanche-total"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="strategy-card">
+                            <h3>Snowball Method</h3>
+                            <p>Pay smallest balance debts first</p>
+                            
+                            <div class="strategy-detail">
+                                <span>Payoff Timeline:</span>
+                                <span id="snowball-time"></span>
+                            </div>
+                            
+                            <div class="strategy-detail">
+                                <span>Payoff Date:</span>
+                                <span id="snowball-date"></span>
+                            </div>
+                            
+                            <div class="strategy-detail">
+                                <span>Total Interest:</span>
+                                <span id="snowball-interest" class="strategy-highlight"></span>
+                            </div>
+                            
+                            <div class="strategy-detail">
+                                <span>Total Paid:</span>
+                                <span id="snowball-total"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recommendation" id="strategy-recommendation"></div>
+                    
+                    <div class="chart-container">
+                        <canvas id="strategy-comparison-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Debt Modal -->
+        <div id="add-debt-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('add-debt-modal')">&times;</span>
+                <h2>Add New Debt</h2>
+                <form id="add-debt-form">
+                    <div class="form-group">
+                        <label for="debt-name">Debt Name</label>
+                        <input type="text" id="debt-name" class="form-control" required placeholder="e.g., Credit Card, Student Loan">
+                    </div>
+                    <div class="form-group">
+                        <label for="debt-principal">Principal Amount ($)</label>
+                        <input type="number" id="debt-principal" class="form-control" required min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="debt-interest">Annual Interest Rate (%)</label>
+                        <input type="number" id="debt-interest" class="form-control" required min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="debt-min-payment">Minimum Monthly Payment ($)</label>
+                        <input type="number" id="debt-min-payment" class="form-control" required min="0" step="0.01">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('add-debt-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Debt</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Make Payment Modal -->
+        <div id="make-payment-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('make-payment-modal')">&times;</span>
+                <h2>Make Payment</h2>
+                <form id="make-payment-form">
+                    <div class="form-group">
+                        <label for="payment-debt-id">Debt</label>
+                        <select id="payment-debt-id" class="form-control" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-amount">Payment Amount ($)</label>
+                        <input type="number" id="payment-amount" class="form-control" required min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-date">Payment Date</label>
+                        <input type="date" id="payment-date" class="form-control" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('make-payment-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Payment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Delete Debt Modal -->
+        <div id="delete-debt-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('delete-debt-modal')">&times;</span>
+                <h2>Delete Debt</h2>
+                <p>Are you sure you want to delete this debt? This action cannot be undone.</p>
+                <p><strong id="delete-debt-name"></strong></p>
+                <input type="hidden" id="delete-debt-id">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('delete-debt-modal')">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteDebt()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+                
+       
